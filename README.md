@@ -1,2 +1,197 @@
-# Getting-and-Cleaning-Data-Course-Project
-This repository contain the .R and .md files of Week4 assignment for tidy data 
+---
+title: "Readme"
+author: "Atul Gunjal"
+date: "24 September 2017"
+output: html_document
+--- 
+# Readme documnet for the week4 assignnmnet
+
+
+#Raw Data
+The raw data for this project is accelerometer data collected from the Samsung Galaxy S smartphone, and was provided to us at the links below:
+
+A full description is available at the site where the data was obtained:
+
+
+**Data file :** 
+https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip
+
+**Full description of data :** http://archive.ics.uci.edu/ml/datasets/Human+Activity+Recognition+Using+Smartphones
+
+This data included both the raw sampled data (folder ../Inertial Signals) and features apparently based on the raw data. For the purpose of this project, I am only looking at the features, not the raw data.
+There are 3 types of files:
+
+**•	x:** 
+rows of feature measurements
+
+**•	y:** 
+the activity labels corresponding to each row of X. Encoded as numbers.
+
+**•	subject:** 
+the subjects on which each row of X was measured. Encoded as numbers.
+
+
+In addition, to determine which features are required, we look at the list of features:
+
+**•	features.txt**
+The encoding from activity labels ids to descriptive names.
+
+**•	activity_labels.txt** 
+
+
+#Data load
+
+**•	Setup working directory**
+
+Set up workign directory where all input and outut file are residing.
+
+**•	Unzip the zip file**
+
+It creates the folder structure as follows:
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* Sub-directory : UCI HAR Dataset
+
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*Under this sub directory two folders are created
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*test
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*train
+
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*Under “test” folder following files are copies. These are in .txt format.
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*subject_test
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*X_test
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*Y_test
+
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*Under “train” folder following files are copies. These are in .txt format. 
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*subject_train
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*X_train
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*Y_train
+
+
+•	The data from  X, y and  subject data from “test” is combined in to a dataset. It is called as *df_X__Test_Total*
+
+•	The data from  X, y and  subject data from “train” is combined in to a dataset. It is called as *df_X__Train_Total*
+
+•	A combined data *df_Total* is created by appending *df_X__Train_Total* to *df_X__Test_Total*
+
+•	From the combine data a subset is created for the measures which contain the 'mean' and 'std' characters in the column names.
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*To achieve this read the “features.txt file. 
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*From this create vector “vector_meanandstdcolumnNames“. It contains column numbers of those columns which contains mean and std characters in it. 
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*Now, create a subset, dfSubsetofTotal from df_total. 
+
+```{r echo = FALSE}
+## This piece of code does seting up fo the working directory, loading required library, readting test, training and subject data. Combine the test data.
+
+
+setwd("D:\\Data Science Course\\Coursera-R-Programming_Course\\Getting and Cleaning Data\\week4\\Data")
+library(dplyr)
+library(tidyr)
+df_X__Test_Total = NULL
+df_X_Train_Total = NULL
+df_Total = NULL
+dfSubsetofTotal = NULL
+dfSubsetofTotal2 = NULL
+dfSubsetofTotal3 = NULL
+
+##Step1.1: Read X_test, Y_test and Subject_test  data 
+##and merge it into one block say test_block
+dfy_test <- read.table(".\\y_test.txt",header = FALSE)
+dfX_test <- read.table(".\\X_test.txt",header = FALSE)
+dfSubject_test <- read.table(".\\subject_test.txt",header = FALSE)
+df_X__Test_Total <- cbind(dfSubject_test,dfy_test,dfX_test)
+
+##Step1.2: Read X_train, Y_train and Subject_train  data
+##and merge it into one block say train_block
+dfSubject_train <- read.table(".\\subject_train.txt",header = FALSE)
+dfy_train <- read.table(".\\y_train.txt",header = FALSE)
+dfX_train <- read.table(".\\X_train.txt",header = FALSE)
+df_X_Train_Total <- cbind(dfSubject_train,dfy_train,dfX_train)
+
+##Step 1.3 Combine test_block and train_block into one 
+df_Total <- rbind(df_X__Test_Total, df_X_Train_Total)
+
+
+```
+
+
+#Transformation
+
+1.	Now we have a data frame, *dfSubsetofTotal*. The datafram is subset of the *df_Total*. It contains the data of those columns whihc has characters 'mean' and 'std' in their column names. 
+
+&nbsp;1.1	We have to make data frame, *dfSubsetofTotal*, column names more human readable. FOr this we need to replace atcivity id column by by activity description. To achieve this we take following steps. 
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1.1.1.	Read feature.txt file. Create a dataframe, *dfFeature*.  Create a vecor from it, *vector_meanandstdcolumnNames*, by selecting the column numbers which have  characters 'std' and 'mean' embed with in it. 
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1.1.2.	Referring to the data frame, *df_Total* and vecor,*vector_meanandstdcolumnNames*, crate the data frame *dfSubsetofTotal* .
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1.1.3.	Create a vector, *colNAmestossign*, by referring to the vector, *vector_meanandstdcolumnNames*, and the data frame *dfFeature*.  This vector contains the name to assign to the columns to make data more readable. 
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1.1.4.	From the vector, *colNAmestossign*, change some column names by making it more readable. i.e. replace first "t" and "f" with "time" and "freq".  Assign these names to the dtaframe *dfSubsetofTotal*. 
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1.1.5.	CHange first two column names of the dataframe *dfSubsetofTotal* with "Subject" and "Activity" respectively. 
+
+1.2	Group data Subject and Activitywise from the dataframe *dfSubsetofTotal*. And create a dataframe *dfSubsetofTotal2*. 
+
+1.3 Take a mean of each activity amd create a new dataframe *dfSubsetofTotal3*
+
+1.4 Write the resultant dataframe,*dfSubsetofTotal3*,   as a text into the file, *MyTidyData.txt*. 
+in to the 
+
+```{r echo = FALSE}
+##Step 2
+##Extract only subject, activities,  and measuremnet columns 
+##with mean and standarad names in it 
+
+##Step1 2.1 read feature.txt and select columns with mean and std name
+dfFeature <- read.table(".\\features.txt",header = FALSE)
+vector_meanandstdcolumnNames <- grep("mean|std", dfFeature$V2)
+
+##Step 2.2 cerate a subset of mean/std measures from the total measure 
+dfSubsetofTotal <- df_Total[,vector_meanandstdcolumnNames]  
+##dfSubsetofTotal[,2] <- lookUpVector[dfSubsetofTotal[,2]]
+##Step 3. Change subset column names to more readable one
+dfFeature$V2[ vector_meanandstdcolumnNames[1:77]]
+colNAmestossign <- as.vector (dfFeature$V2[ vector_meanandstdcolumnNames])
+X <- sub ("t", "time", colNAmestossign)  #replace first char "t" of the column name with time
+y <- sub ("f", "freq", X) #replace first char "f" of the column name with freq
+
+colNAmestossign <- y # more readable column names  name 
+
+
+colnames(dfSubsetofTotal)[c(3:79)] <- colNAmestossign[1:77]
+colnames(dfSubsetofTotal)[c(1:2)] <- c("Subject","Activity")
+
+##Step4 remove punctuation marks from colnames 
+##and substiture first t with time, and f with freq 
+#gsub("[[:punct:]]","",colnames(dfSubsetofTotal)[c(3:79)])
+##sub("f", "freq-",colnames(dfSubsetofTotal)[c(3:79)])
+
+##Step 4.1. Group subset by SUbject and Activity using group_by
+dfSubsetofTotal2 <- group_by(dfSubsetofTotal,Subject,Activity) 
+#replace the NULL's with 0
+dfSubsetofTotal2[is.null(dfSubsetofTotal2)] <- 0.0
+
+##Step 5 mean of each measures. 
+dfSubsetofTotal3 <- summarise_each(dfSubsetofTotal2,funs(mean), 3:77)
+
+write.table(dfSubsetofTotal3, file = "MyTidyData.txt", sep="\t", row.names=FALSE)
+ 
+
+
+```
+
+
+
+
